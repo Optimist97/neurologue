@@ -15,7 +15,7 @@ const common = {
   build: {
     outDir,
     emptyOutDir: true,
-    rollupOptions: { input: { index: path.join(root, 'index.html'), cms: path.join(root, 'cms.html'), consultations: path.join(root, 'consultations.html') } },
+    rollupOptions: { input: { index: path.join(root, 'index.html'), cms: path.join(root, 'cms.html'), connexion: path.join(root, 'connexion.html'), consultations: path.join(root, 'consultations.html') } },
   },
 };
 const mode = process.argv[2];

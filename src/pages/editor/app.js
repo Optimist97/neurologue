@@ -40,9 +40,15 @@ function validateObject(source,template,key) {
  return result;
 }
 class App {
- constructor() { this.data=clone(defaultData);this.token=null;this.remoteSha=null;this.baseSha=null;this.hasDraft=false;this.dirty=false;this.frame=document.getElementById('preview');this.bind();this.load(); }
+ constructor() { this.data=clone(defaultData);this.token=null;this.remoteSha=null;this.baseSha=null;this.hasDraft=false;this.dirty=false;this.frame=document.getElementById('preview');this.bind();this.setSessionView(false);this.load(); }
  status(message) { document.getElementById('status').textContent=message; }
- githubStatus(message) { document.getElementById('githubStatus').textContent=message; }
+ githubStatus(message) { document.getElementById('githubStatus').textContent=message; const login=document.getElementById('loginStatus');if(login)login.textContent=message; }
+ setSessionView(connected) {
+  const login=document.getElementById('loginView'),editor=document.getElementById('editorView');if(!login||!editor)return;
+  login.hidden=connected;editor.hidden=!connected;document.title=connected?'Atelier · Neurologie':'Connexion · Neurologie';
+  if(typeof window!=='undefined')window.history.replaceState(null,'',connected?'./cms.html':'./connexion.html');
+  document.getElementById(connected?'save':'githubToken').focus();
+ }
  async load() {
   try {
    const response=await fetch('./cv-data.json',{cache:'no-cache'});
@@ -59,7 +65,7 @@ class App {
   const byId=(id,fn)=>document.getElementById(id).addEventListener('click',fn);
   byId('save',()=>this.save());
   byId('publish',()=>this.publish());
-  byId('connect',()=>this.connect());
+  document.getElementById('loginForm').addEventListener('submit',event=>{event.preventDefault();this.connect();});
   byId('disconnect',()=>this.disconnect());
   byId('export',()=>this.export());
   byId('demo',()=>{if(confirm('Remplacer le brouillon par l’exemple fictif ?')){this.data=clone(defaultData);this.dirty=true;this.render();this.save();}});
@@ -150,19 +156,19 @@ class App {
  }
  async connect() {
   const input=document.getElementById('githubToken');const token=input.value.trim();input.value='';
-  if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token))return this.githubStatus('Collez un jeton personnel GitHub valide (github_pat_ ou ghp_).');
-  this.token=token;this.githubStatus('Connexion en cours…');
+  if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token))return this.githubStatus('Veuillez saisir un token GitHub valide.');
+  this.token=token;const connectButton=document.getElementById('connect');if(connectButton)connectButton.disabled=true;this.githubStatus('Connexion en cours…');
   try {
    const response=await fetch('https://api.github.com/user',{headers:this.headers()});
    if(!response.ok)throw new Error('Jeton invalide ou expiré.');
-   const user=await response.json();if(user.login.toLowerCase()!=='optimist97')throw new Error('Ce jeton doit appartenir à Optimist97.');
+   const user=await response.json();if(user.login.toLowerCase()!=='optimist97')throw new Error('Ce token ne permet pas d’accéder à cet éditeur.');
    const remote=await this.remote();this.remoteSha=remote.sha;
    if((this.hasDraft||this.dirty)&&this.baseSha&&this.baseSha!==remote.sha)throw new Error('Le contenu distant a changé depuis ce brouillon. Exportez votre brouillon et rechargez le site publié avant de fusionner vos modifications.');
    if(!this.hasDraft&&!this.dirty){this.data=validateData(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(remote.content.replace(/\s/g,'')),c=>c.charCodeAt(0)))));this.render();this.preview();}
-   this.baseSha=remote.sha;document.getElementById('disconnect').disabled=false;document.getElementById('publish').disabled=false;this.githubStatus('Connecté à '+REPOSITORY+'. Modifiez les champs puis cliquez sur Publier sur GitHub pour mettre le site à jour.');
-  } catch(error){this.token=null;document.getElementById('publish').disabled=true;document.getElementById('disconnect').disabled=true;this.githubStatus(error.message);}
+   this.baseSha=remote.sha;this.setSessionView(true);document.getElementById('disconnect').disabled=false;document.getElementById('publish').disabled=false;this.githubStatus('Connecté à '+REPOSITORY+'. Modifiez les champs puis cliquez sur Publier sur GitHub pour mettre le site à jour.');
+  } catch(error){this.token=null;document.getElementById('publish').disabled=true;document.getElementById('disconnect').disabled=true;this.githubStatus(error.message);}finally{const button=document.getElementById('connect');if(button)button.disabled=false;}
  }
- disconnect(){this.token=null;this.remoteSha=null;document.getElementById('githubToken').value='';document.getElementById('disconnect').disabled=true;document.getElementById('publish').disabled=true;this.githubStatus('Déconnecté. Le jeton a été retiré de la mémoire.');}
+ disconnect(){this.setSessionView(false);this.token=null;this.remoteSha=null;document.getElementById('githubToken').value='';document.getElementById('disconnect').disabled=true;document.getElementById('publish').disabled=true;this.githubStatus('Déconnecté. Le jeton a été retiré de la mémoire.');}
  async publish() {
   if(!this.token){this.githubStatus('Connectez GitHub pour publier. Vos modifications restent en brouillon.');document.getElementById('githubToken').focus();return;}
   const button=document.getElementById('publish');button.disabled=true;this.githubStatus('Publication en cours…');

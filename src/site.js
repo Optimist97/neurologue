@@ -36,7 +36,14 @@ const neuroIllustration = (kind='brain') => {
  };
  return '<div class="neuro-illustration neuro-'+kind+'" aria-hidden="true"><svg viewBox="0 0 200 200" fill="none"><ellipse class="art-wash" cx="100" cy="102" rx="85" ry="80"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+shapes[kind]+'</g></svg></div>';
 };
+export function applyPageMetadata(doc,d,mode='home') {
+ if(!doc)return;
+ doc.title=d.maintenance.enabled?d.maintenance.title:mode==='consult'?d.infoPage.title+' · '+d.general.name:d.general.name+' · '+d.general.specialty;
+ const description=doc.querySelector?.('meta[name="description"]');if(description)description.content=d.maintenance.enabled?d.maintenance.message:d.general.description;
+ const icon=doc.querySelector?.('link[rel="icon"]');if(icon)icon.href=d.maintenance.enabled?'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>':'./favicon.svg';
+}
 export function renderSite(root, d, mode='home') {
+  applyPageMetadata(root.ownerDocument,d,mode);
   const palette=Object.hasOwn(PALETTES,d.general.background) ? PALETTES[d.general.background] : PALETTES.ivory;
   const style=root.ownerDocument?.documentElement.style;
   const fonts=Object.hasOwn(FONT_CHOICES,d.general.typography) ? FONT_CHOICES[d.general.typography] : FONT_CHOICES.classic;
@@ -45,7 +52,7 @@ export function renderSite(root, d, mode='home') {
     const value=d.general[key];
     style.setProperty(setting.variable,(Number.isInteger(value)&&value>=setting.min&&value<=setting.max?value:setting.default)+'px');
   }
-  if (d.maintenance.enabled) { root.innerHTML = `<main id="main" class="maintenance"><span class="brand-mark">${e(d.general.initials)}</span><p class="eyebrow">${e(d.general.name)} · ${e(d.general.specialty)}</p><h1>${e(d.maintenance.title)}</h1><p>${e(d.maintenance.message)}</p></main>`; return; }
+  if (d.maintenance.enabled) { root.innerHTML = `<main id="main" class="maintenance"><h1>${e(d.maintenance.title)}</h1><p>${e(d.maintenance.message)}</p></main>`; return; }
   const home=mode==='home';
   if (!home && !shown(d.infoPage)) { root.innerHTML='<main id="main" class="maintenance"><h1>Page indisponible</h1><a href="./index.html">Retour à l’accueil</a></main>';return; }
   const places = home && shown(d.locationsSection) && list(d.locations).length;

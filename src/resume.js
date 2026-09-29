@@ -8,8 +8,6 @@ if (!response.ok) throw new Error('Données indisponibles');
 const data = await response.json();
 renderSite(root,data,mode);
 if(location.hash)requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView({behavior:"instant",block:"start"}));
-document.title = mode === 'consult' ? `${data.infoPage.title} · ${data.general.name}` : `${data.general.name} · ${data.general.specialty}`;
-document.querySelector('meta[name="description"]').content = data.general.description;
 } catch { root.innerHTML = '<main id="main" class="maintenance"><h1>Le site est momentanément indisponible.</h1><p>Merci de réessayer dans quelques instants.</p></main>'; }
 }
 if (new URLSearchParams(location.search).has('preview') && window.parent !== window) {

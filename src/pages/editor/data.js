@@ -30,6 +30,7 @@ export const defaultData = {
     "note": "Consultations en français · Sur rendez-vous"
   },
   "about": {
+    "illustrationVisible": true,
     "visible": true,
     "eyebrow": "LA NEUROLOGUE",
     "title": "Présentation",
@@ -122,6 +123,7 @@ export const defaultData = {
     }
   ],
   "practical": {
+    "illustrationVisible": true,
     "visible": true,
     "eyebrow": "AVANT VOTRE RENDEZ-VOUS",
     "title": "Préparer votre consultation",
@@ -199,6 +201,7 @@ export const defaultData = {
     "text": "Site de démonstration du Dr Olivia Renard, identité fictive. Les établissements cités sont réels ; aucune affiliation de ce profil fictif à ces établissements n’est revendiquée. Les coordonnées des secrétariats sont publiques.\n\nÉditeur : à compléter avant une utilisation réelle (nom, adresse professionnelle, numéro INAMI et contact). Hébergement : GitHub Pages, GitHub Inc. Ce site ne collecte pas de dossiers patients et ne comporte aucun formulaire médical, outil publicitaire ou suivi d’audience. Les sites externes appliquent leur propre politique de confidentialité.\n\nCes informations générales ne remplacent pas une consultation. Les données de cet exemple doivent être adaptées et vérifiées par la praticienne avant usage professionnel."
   },
   "infoPage": {
+    "illustrationVisible": true,
     "visible": true,
     "title": "Quand consulter en neurologie ?",
     "label": "Quand consulter en neurologie ?",

@@ -6,7 +6,12 @@ const clone = d => JSON.parse(JSON.stringify(d));
 const sections = [
 ['general','Identité, photo & lisibilité'],['maintenance','Site en construction'],['hero','Accueil'],['about','La neurologue'],['infoPage','Page : quand consulter ?'],['topics','Motifs · titre de rubrique'],['conditions','Motifs de consultation'],['locationsSection','Lieux · titre de rubrique'],['locations','Centres & hôpitaux'],['practical','Préparer la consultation'],['preparations','Conseils de préparation'],['faqSection','Questions · titre de rubrique'],['faqs','Questions fréquentes'],['contactSection','Contact · titre de rubrique'],['contacts','Liens de contact'],['emergency','Urgences'],['legal','Mentions légales']
 ];
-const labels = {photo:'Photo (lien HTTPS ou image importée)',showPhoto:'Afficher la photo',photoAlt:'Description de la photo',bookingUrl:'Lien de rendez-vous ROSA',bookingLabel:'Texte du bouton de rendez-vous',bookingVisible:'Afficher le bouton de rendez-vous ROSA',visible:'Afficher sur le site',name:'Nom',specialty:'Spécialité',region:'Région',initials:'Monogramme',description:'Description pour les moteurs de recherche',demo:'Afficher le bandeau de démonstration',demoMessage:'Message du bandeau',footer:'Phrase du pied de page',enabled:'Masquer tout le site (mode construction)',title:'Titre',message:'Message personnalisé',eyebrow:'Petit titre de rubrique',accent:'Deuxième partie du titre',text:'Texte',button:'Libellé du bouton',secondary:'Libellé du lien vers l’approche',note:'Information sous les boutons',artVisible:'Afficher le motif graphique',artCaption:'Légende du motif',quote:'Citation',qualifications:'Formation & qualifications',languages:'Langues de consultation',mapLabel:'Libellé du lien itinéraire',type:'Type d’établissement',subtitle:'Sous-titre',city:'Ville',address:'Adresse',url:'Lien (https://, mailto: ou tel:)',linkVisible:'Afficher le lien vers l’établissement',phone:'Téléphone du secrétariat',phoneVisible:'Afficher le lien d’appel',map:'Lien vers l’itinéraire',mapVisible:'Afficher l’itinéraire',question:'Question',answer:'Réponse',privacy:'Confidentialité / note de contact',label:'Libellé du contact',value:'Coordonnée affichée'};
+const labels = {illustrationVisible:'Afficher l’illustration de cette rubrique',photo:'Photo (lien HTTPS ou image importée)',showPhoto:'Afficher la photo',photoAlt:'Description de la photo',bookingUrl:'Lien de rendez-vous ROSA',bookingLabel:'Texte du bouton de rendez-vous',bookingVisible:'Afficher le bouton de rendez-vous ROSA',visible:'Afficher sur le site',name:'Nom',specialty:'Spécialité',region:'Région',initials:'Monogramme',description:'Description pour les moteurs de recherche',demo:'Afficher le bandeau de démonstration',demoMessage:'Message du bandeau',footer:'Phrase du pied de page',enabled:'Masquer tout le site (mode construction)',title:'Titre',message:'Message personnalisé',eyebrow:'Petit titre de rubrique',accent:'Deuxième partie du titre',text:'Texte',button:'Libellé du bouton',secondary:'Libellé du lien vers l’approche',note:'Information sous les boutons',artVisible:'Afficher le motif graphique',artCaption:'Légende du motif',quote:'Citation',qualifications:'Formation & qualifications',languages:'Langues de consultation',mapLabel:'Libellé du lien itinéraire',type:'Type d’établissement',subtitle:'Sous-titre',city:'Ville',address:'Adresse',url:'Lien (https://, mailto: ou tel:)',linkVisible:'Afficher le lien vers l’établissement',phone:'Téléphone du secrétariat',phoneVisible:'Afficher le lien d’appel',map:'Lien vers l’itinéraire',mapVisible:'Afficher l’itinéraire',question:'Question',answer:'Réponse',privacy:'Confidentialité / note de contact',label:'Libellé du contact',value:'Coordonnée affichée'};
+const pageSections = {
+ home: ['hero','about','locationsSection','locations','practical','preparations','contactSection','contacts'],
+ consult: ['infoPage','topics','conditions','faqSection','faqs'],
+ shared: ['general','maintenance','emergency','legal']
+};
 const longFields = new Set(['description','text','message','privacy','answer','quote']);
 export function validateData(data) {
  if (!data || typeof data !== 'object' || Array.isArray(data) || data.version !== 2) throw new Error('Ce fichier doit être un export du CMS neurologie (version 2).');
@@ -40,7 +45,7 @@ function validateObject(source,template,key) {
  return result;
 }
 class App {
- constructor() { this.data=clone(defaultData);this.token=null;this.remoteSha=null;this.baseSha=null;this.hasDraft=false;this.dirty=false;this.frame=document.getElementById('preview');this.bind();this.setSessionView(false);this.load(); }
+ constructor() { this.data=clone(defaultData);this.token=null;this.remoteSha=null;this.baseSha=null;this.hasDraft=false;this.dirty=false;this.editorPage='home';this.frame=document.getElementById('preview');this.bind();this.setSessionView(false);this.load(); }
  status(message) { document.getElementById('status').textContent=message; }
  githubStatus(message) { document.getElementById('githubStatus').textContent=message; const login=document.getElementById('loginStatus');if(login)login.textContent=message; }
  setSessionView(connected) {
@@ -84,8 +89,12 @@ class App {
    }catch(error){this.status(error.message);}
   });
   document.getElementById('previewPage').addEventListener('change',event=>{
-   this.frame.src=event.target.value==='consult'?'./consultations.html?preview=1':'./index.html?preview=1';
+   this.editorPage=event.target.value;this.render();this.frame.src=event.target.value==='consult'?'./consultations.html?preview=1':'./index.html?preview=1';
   });
+  document.querySelectorAll('[data-editor-page]').forEach(button=>button.addEventListener('click',()=>{
+   this.editorPage=button.dataset.editorPage;this.render();
+   if(this.editorPage!=='shared'){document.getElementById('previewPage').value=this.editorPage;this.frame.src=this.editorPage==='consult'?'./consultations.html?preview=1':'./index.html?preview=1';}
+  }));
   document.getElementById('fields').addEventListener('input',event=>{
    const path=event.target.dataset.path;
    if(!path) return;
@@ -125,8 +134,11 @@ class App {
   return `<label for="${id}">${e(label)}</label>${longFields.has(key)?`<textarea id="${id}" data-path="${path}">${e(value)}</textarea>`:`<input id="${id}" data-path="${path}" value="${e(value)}">`}`;
  }
  render() {
+  const page=this.editorPage||'home';
+  document.querySelectorAll('[data-editor-page]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.editorPage===page)));
+  const context=document.getElementById('editingContext');if(context)context.textContent=page==='shared'?'Réglages communs · apparence, visibilité du site et informations générales.':page==='home'?'Page d’accueil · présentation, lieux et préparation de la consultation.':'Page Quand consulter ? · motifs de consultation et questions fréquentes.';
   const open=new Set(Array.from(document.querySelectorAll('#fields>details[open]')).map(d=>d.dataset.section));
-  document.getElementById('fields').innerHTML=sections.map(([key,title])=>{
+  document.getElementById('fields').innerHTML=sections.filter(([key])=>pageSections[page].includes(key)).map(([key,title])=>{
    const value=this.data[key];
    const fields=Array.isArray(value)?value.map((item,index)=>`<article class="list-item"><div class="item-heading"><h3>${e(item.name||item.title||item.question||item.label||'Nouvel élément')} <small>· ${index+1}</small></h3></div>${Object.entries(item).map(([k,v])=>this.field(k,v,key+'.'+index+'.'+k)).join('')}<div class="item-actions"><button data-list="${key}" data-index="${index}" data-action="up" aria-label="Monter l’élément ${index+1}" ${index===0?'disabled':''}>↑ Monter</button><button data-list="${key}" data-index="${index}" data-action="down" aria-label="Descendre l’élément ${index+1}" ${index===value.length-1?'disabled':''}>↓ Descendre</button><button class="danger" data-list="${key}" data-index="${index}" data-action="remove">Supprimer</button></div></article>`).join('')+`<button data-list="${key}" data-action="add">+ Ajouter un élément</button>`:Object.entries(value).map(([k,v])=>this.field(k,v,key+'.'+k)).join('');
    return `<details data-section="${key}" ${open.has(key)||key==='maintenance'?'open':''}><summary>${e(title)}${Array.isArray(value)?' ('+value.length+')':''}</summary>${fields}</details>`;

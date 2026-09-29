@@ -94,7 +94,10 @@
       "phone": "+32 81 72 05 81",
       "phoneVisible": true,
       "map": "https://www.google.com/maps/search/?api=1&query=CHU+Sainte+Elisabeth+Namur",
-      "mapVisible": true
+      "mapVisible": true,
+      "bookingUrl": "https://registry.chuuclnamur.rosa.be/fr/search/",
+      "bookingLabel": "Rendez-vous sur ROSA",
+      "bookingVisible": true
     },
     {
       "visible": true,
@@ -109,7 +112,10 @@
       "phone": "+32 81 20 85 80",
       "phoneVisible": true,
       "map": "https://www.google.com/maps/search/?api=1&query=Rue+du+Chainia+96+5081+Meux",
-      "mapVisible": true
+      "mapVisible": true,
+      "bookingUrl": "https://rosa.be/fr/org/centre-de-la-ridale/",
+      "bookingLabel": "Rendez-vous sur ROSA",
+      "bookingVisible": true
     }
   ],
   "practical": {
@@ -144,7 +150,7 @@
     {
       "visible": true,
       "question": "Comment prendre rendez-vous ?",
-      "answer": "Contactez le secrétariat du lieu où vous souhaitez consulter, via les liens ou numéros ci-dessus. Ce site ne permet pas de réserver directement."
+      "answer": "Utilisez le bouton ROSA du lieu où vous souhaitez consulter, ou contactez son secrétariat. La réservation s’effectue sur la plateforme externe, selon les praticiens et créneaux disponibles."
     },
     {
       "visible": true,

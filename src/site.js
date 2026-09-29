@@ -1,6 +1,18 @@
 export const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 export function safeUrl(value = '') { try { const u = new URL(value); return ['https:', 'http:', 'mailto:', 'tel:'].includes(u.protocol) ? escapeHtml(u.href) : ''; } catch { return ''; } }
 const e = escapeHtml;
+export const FONT_CHOICES = {
+  classic: { label:'Classique · Source Serif 4', serif:'"Source Serif 4", Georgia, serif', sans:'"Source Sans 3", system-ui, sans-serif' },
+  contemporary: { label:'Contemporain · Lora', serif:'Lora, Georgia, serif', sans:'"DM Sans", system-ui, sans-serif' },
+  simple: { label:'Sobre · Source Sans 3', serif:'"Source Sans 3", system-ui, sans-serif', sans:'"Source Sans 3", system-ui, sans-serif' }
+};
+export const PALETTES = {
+  ivory: { label:'Ivoire · défaut', paper:'#f8f6ef', sage:'#e8eee4' },
+  sage: { label:'Sauge pâle', paper:'#eef2e8', sage:'#e2e9d9' },
+  mist: { label:'Bleu brume', paper:'#edf2f6', sage:'#e0e9ed' },
+  lavender: { label:'Lavande grisée', paper:'#f0ecf4', sage:'#e6e2ed' },
+  terracotta: { label:'Terracotta clair', paper:'#f5e6dd', sage:'#ecddd1' }
+};
 export function safePhoto(value='') {
   if (/^\.\/[a-zA-Z0-9_./-]+\.(webp|png|jpe?g)$/i.test(value) && !value.includes('..')) return e(value);
   if (/^data:image\/(webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(value)) return e(value);
@@ -12,6 +24,10 @@ const list = items => (items || []).filter(shown);
 const external = (url, label, cls = '') => safeUrl(url) ? `<a class="${cls}" href="${safeUrl(url)}"${/^https?:/.test(url) ? ' target="_blank" rel="noopener noreferrer"' : ''}>${e(label)} <span aria-hidden="true">↗</span></a>` : '';
 const heading = s => `<p class="eyebrow">${e(s.eyebrow)}</p><h2>${e(s.title)}</h2>${s.text ? `<p class="section-intro">${e(s.text)}</p>` : ''}`;
 export function renderSite(root, d, mode='home') {
+  const palette=PALETTES[d.general.background] || PALETTES.ivory;
+  const style=root.ownerDocument?.documentElement.style;
+  const fonts=FONT_CHOICES[d.general.typography] || FONT_CHOICES.classic;
+  if(style){style.setProperty('--paper',palette.paper);style.setProperty('--sage',palette.sage);style.setProperty('--serif',fonts.serif);style.setProperty('--sans',fonts.sans);}
   if (d.maintenance.enabled) { root.innerHTML = `<main id="main" class="maintenance"><span class="brand-mark">${e(d.general.initials)}</span><p class="eyebrow">${e(d.general.name)} · ${e(d.general.specialty)}</p><h1>${e(d.maintenance.title)}</h1><p>${e(d.maintenance.message)}</p></main>`; return; }
   const home=mode==='home';
   if (!home && !shown(d.infoPage)) { root.innerHTML='<main id="main" class="maintenance"><h1>Page indisponible</h1><a href="./index.html">Retour à l’accueil</a></main>';return; }

@@ -1,5 +1,5 @@
 import { defaultData } from './data.js';
-import { escapeHtml as e, safeUrl, safePhoto } from '../../site.js';
+import { escapeHtml as e, safeUrl, safePhoto, PALETTES, FONT_CHOICES } from '../../site.js';
 export const REPOSITORY = 'Optimist97/neurologue';
 export const STORAGE_KEY = 'neuro-site-v2-draft';
 const clone = d => JSON.parse(JSON.stringify(d));
@@ -28,6 +28,8 @@ function validateObject(source,template,key) {
   const entry = source[field] ?? value;
   if (typeof entry !== typeof value || (typeof entry === 'string' && entry.length > (field==='photo'?1000000:20000))) throw new Error('Champ invalide : '+key+'.'+field);
   if (field==='photo' && entry && !safePhoto(entry)) throw new Error('Photo invalide : utilisez une image importée, un chemin local ou un lien HTTPS.');
+  if (field==='background' && !PALETTES[entry]) throw new Error('Choisissez l’un des fonds pastels proposés.');
+  if (field==='typography' && !FONT_CHOICES[entry]) throw new Error('Choisissez l’une des trois typographies proposées.');
   if (typeof entry === 'string' && ['url','map'].includes(field) && entry && !safeUrl(entry)) throw new Error('Lien invalide : '+key+'.'+field);
   result[field] = entry;
  }
@@ -106,6 +108,8 @@ class App {
  field(key,value,path) {
   const id='field-'+path.replaceAll('.','-'), label=labels[key]||key;
   if(typeof value==='boolean') return `<label class="field-toggle" for="${id}">${e(label)}<input role="switch" type="checkbox" id="${id}" data-path="${path}" ${value?'checked':''}></label>`;
+  if(key==='typography')return `<label for="${id}">Typographie</label><select id="${id}" data-path="${path}">${Object.entries(FONT_CHOICES).map(([k,f])=>`<option value="${k}" ${k===value?'selected':''}>${e(f.label)}</option>`).join('')}</select><p class="help">Trois associations professionnelles, avec un texte courant lisible. Le choix s’applique aux deux pages.</p>`;
+  if(key==='background')return `<label for="${id}">Couleur de fond</label><select id="${id}" data-path="${path}">${Object.entries(PALETTES).map(([k,p])=>`<option value="${k}" ${k===value?'selected':''}>${e(p.label)}</option>`).join('')}</select><div class="palette-swatches" aria-hidden="true">${Object.entries(PALETTES).map(([k,p])=>`<span title="${e(p.label)}" style="background:${p.paper};${k===value?'outline:2px solid #183e37':''}"></span>`).join('')}</div><p class="help">Teintes claires sélectionnées pour leur contraste avec le texte. L’ivoire est le choix par défaut.</p>`;
   if(key==='photo')return `<label for="${id}">${e(label)}</label><input id="${id}" data-path="${path}" value="${e(value.startsWith('data:')?'':value)}" placeholder="Image importée ou adresse HTTPS"><label class="file-button">Importer une photo<input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><p class="help">JPEG, PNG ou WebP · 15 Mo maximum. La photo est optimisée puis incluse dans le contenu publié.</p>`;
   return `<label for="${id}">${e(label)}</label>${longFields.has(key)?`<textarea id="${id}" data-path="${path}">${e(value)}</textarea>`:`<input id="${id}" data-path="${path}" value="${e(value)}">`}`;
  }

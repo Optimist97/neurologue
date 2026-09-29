@@ -11,7 +11,9 @@ export const defaultData = {
     "footer": "Neurologie · Namur et Meux",
     "photo": "./portrait.png",
     "showPhoto": true,
-    "photoAlt": "Portrait fictif du Dr Olivia Renard"
+    "photoAlt": "Portrait fictif du Dr Olivia Renard",
+    "background": "ivory",
+    "typography": "classic"
   },
   "maintenance": {
     "enabled": false,

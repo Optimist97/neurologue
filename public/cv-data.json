@@ -19,7 +19,7 @@
     "textSize": 18
   },
   "maintenance": {
-    "enabled": true,
+    "enabled": false,
     "title": "Un nouveau site se prépare.",
     "message": "Ce site est en construction. Merci de votre patience et à bientôt."
   },

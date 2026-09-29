@@ -24,9 +24,9 @@ const list = items => (items || []).filter(shown);
 const external = (url, label, cls = '') => safeUrl(url) ? `<a class="${cls}" href="${safeUrl(url)}"${/^https?:/.test(url) ? ' target="_blank" rel="noopener noreferrer"' : ''}>${e(label)} <span aria-hidden="true">↗</span></a>` : '';
 const heading = s => `<p class="eyebrow">${e(s.eyebrow)}</p><h2>${e(s.title)}</h2>${s.text ? `<p class="section-intro">${e(s.text)}</p>` : ''}`;
 export function renderSite(root, d, mode='home') {
-  const palette=PALETTES[d.general.background] || PALETTES.ivory;
+  const palette=Object.hasOwn(PALETTES,d.general.background) ? PALETTES[d.general.background] : PALETTES.ivory;
   const style=root.ownerDocument?.documentElement.style;
-  const fonts=FONT_CHOICES[d.general.typography] || FONT_CHOICES.classic;
+  const fonts=Object.hasOwn(FONT_CHOICES,d.general.typography) ? FONT_CHOICES[d.general.typography] : FONT_CHOICES.classic;
   if(style){style.setProperty('--paper',palette.paper);style.setProperty('--sage',palette.sage);style.setProperty('--serif',fonts.serif);style.setProperty('--sans',fonts.sans);}
   if (d.maintenance.enabled) { root.innerHTML = `<main id="main" class="maintenance"><span class="brand-mark">${e(d.general.initials)}</span><p class="eyebrow">${e(d.general.name)} · ${e(d.general.specialty)}</p><h1>${e(d.maintenance.title)}</h1><p>${e(d.maintenance.message)}</p></main>`; return; }
   const home=mode==='home';
@@ -51,5 +51,6 @@ export function renderSite(root, d, mode='home') {
   menu.addEventListener('click', () => { const open = menu.getAttribute('aria-expanded') !== 'true'; menu.setAttribute('aria-expanded',String(open)); root.querySelector('nav').classList.toggle('open',open); });
   root.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{menu.setAttribute('aria-expanded','false');root.querySelector('nav').classList.remove('open');}));
 }
+
 
 

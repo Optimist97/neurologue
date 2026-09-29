@@ -28,8 +28,8 @@ function validateObject(source,template,key) {
   const entry = source[field] ?? value;
   if (typeof entry !== typeof value || (typeof entry === 'string' && entry.length > (field==='photo'?1000000:20000))) throw new Error('Champ invalide : '+key+'.'+field);
   if (field==='photo' && entry && !safePhoto(entry)) throw new Error('Photo invalide : utilisez une image importée, un chemin local ou un lien HTTPS.');
-  if (field==='background' && !PALETTES[entry]) throw new Error('Choisissez l’un des fonds pastels proposés.');
-  if (field==='typography' && !FONT_CHOICES[entry]) throw new Error('Choisissez l’une des trois typographies proposées.');
+  if (field==='background' && !Object.hasOwn(PALETTES,entry)) throw new Error('Choisissez l’un des fonds pastels proposés.');
+  if (field==='typography' && !Object.hasOwn(FONT_CHOICES,entry)) throw new Error('Choisissez l’une des trois typographies proposées.');
   if (typeof entry === 'string' && ['url','map'].includes(field) && entry && !safeUrl(entry)) throw new Error('Lien invalide : '+key+'.'+field);
   result[field] = entry;
  }
@@ -172,5 +172,6 @@ class App {
 }
 if(typeof document!=='undefined')window.app=new App();
 export { App };
+
 
 

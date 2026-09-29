@@ -201,8 +201,8 @@
     "text": "Site de démonstration du Dr Olivia Renard, identité fictive.\n\nÉditeur : à compléter avant une utilisation réelle (nom, adresse professionnelle, numéro INAMI et contact). Hébergement : GitHub Pages, GitHub Inc. Ce site ne collecte pas de dossiers patients et ne comporte aucun formulaire médical, outil publicitaire ou suivi d’audience. Les sites externes appliquent leur propre politique de confidentialité.\n\nCes informations générales ne remplacent pas une consultation. Les données de cet exemple doivent être adaptées et vérifiées par la praticienne avant usage professionnel."
   },
   "infoPage": {
-    "illustrationVisible": true,
-    "visible": true,
+    "illustrationVisible": false,
+    "visible": false,
     "title": "Quand consulter en neurologie ?",
     "label": "Quand consulter en neurologie ?",
     "text": "Motifs de consultation et informations utiles pour préparer votre rendez-vous."

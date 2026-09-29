@@ -1,10 +1,10 @@
 import { defaultData } from './data.js';
-import { escapeHtml as e, safeUrl, safePhoto, PALETTES, FONT_CHOICES } from '../../site.js';
+import { escapeHtml as e, safeUrl, safePhoto, PALETTES, FONT_CHOICES, SIZE_SETTINGS } from '../../site.js';
 export const REPOSITORY = 'Optimist97/neurologue';
 export const STORAGE_KEY = 'neuro-site-v2-draft';
 const clone = d => JSON.parse(JSON.stringify(d));
 const sections = [
-['general','Identité, photo & référencement'],['maintenance','Site en construction'],['hero','Accueil'],['about','La neurologue'],['infoPage','Page : quand consulter ?'],['topics','Motifs · titre de rubrique'],['conditions','Motifs de consultation'],['locationsSection','Lieux · titre de rubrique'],['locations','Centres & hôpitaux'],['practical','Préparer la consultation'],['preparations','Conseils de préparation'],['faqSection','Questions · titre de rubrique'],['faqs','Questions fréquentes'],['contactSection','Contact · titre de rubrique'],['contacts','Liens de contact'],['emergency','Urgences'],['legal','Mentions légales']
+['general','Identité, photo & lisibilité'],['maintenance','Site en construction'],['hero','Accueil'],['about','La neurologue'],['infoPage','Page : quand consulter ?'],['topics','Motifs · titre de rubrique'],['conditions','Motifs de consultation'],['locationsSection','Lieux · titre de rubrique'],['locations','Centres & hôpitaux'],['practical','Préparer la consultation'],['preparations','Conseils de préparation'],['faqSection','Questions · titre de rubrique'],['faqs','Questions fréquentes'],['contactSection','Contact · titre de rubrique'],['contacts','Liens de contact'],['emergency','Urgences'],['legal','Mentions légales']
 ];
 const labels = {photo:'Photo (lien HTTPS ou image importée)',showPhoto:'Afficher la photo',photoAlt:'Description de la photo',bookingUrl:'Lien de rendez-vous ROSA',bookingLabel:'Texte du bouton de rendez-vous',bookingVisible:'Afficher le bouton de rendez-vous ROSA',visible:'Afficher sur le site',name:'Nom',specialty:'Spécialité',region:'Région',initials:'Monogramme',description:'Description pour les moteurs de recherche',demo:'Afficher le bandeau de démonstration',demoMessage:'Message du bandeau',footer:'Phrase du pied de page',enabled:'Masquer tout le site (mode construction)',title:'Titre',message:'Message personnalisé',eyebrow:'Petit titre de rubrique',accent:'Deuxième partie du titre',text:'Texte',button:'Libellé du bouton',secondary:'Libellé du lien vers l’approche',note:'Information sous les boutons',artVisible:'Afficher le motif graphique',artCaption:'Légende du motif',quote:'Citation',qualifications:'Formation & qualifications',languages:'Langues de consultation',mapLabel:'Libellé du lien itinéraire',type:'Type d’établissement',subtitle:'Sous-titre',city:'Ville',address:'Adresse',url:'Lien (https://, mailto: ou tel:)',linkVisible:'Afficher le lien vers l’établissement',phone:'Téléphone du secrétariat',phoneVisible:'Afficher le lien d’appel',map:'Lien vers l’itinéraire',mapVisible:'Afficher l’itinéraire',question:'Question',answer:'Réponse',privacy:'Confidentialité / note de contact',label:'Libellé du contact',value:'Coordonnée affichée'};
 const longFields = new Set(['description','text','message','privacy','answer','quote']);
@@ -30,6 +30,10 @@ function validateObject(source,template,key) {
   if (field==='photo' && entry && !safePhoto(entry)) throw new Error('Photo invalide : utilisez une image importée, un chemin local ou un lien HTTPS.');
   if (field==='background' && !Object.hasOwn(PALETTES,entry)) throw new Error('Choisissez l’un des fonds pastels proposés.');
   if (field==='typography' && !Object.hasOwn(FONT_CHOICES,entry)) throw new Error('Choisissez l’une des trois typographies proposées.');
+  if (Object.hasOwn(SIZE_SETTINGS,field)) {
+    const setting=SIZE_SETTINGS[field];
+    if(!Number.isInteger(entry)||entry<setting.min||entry>setting.max)throw new Error(setting.label+' : choisissez une valeur entre '+setting.min+' et '+setting.max+'.');
+  }
   if (typeof entry === 'string' && ['url','map','bookingUrl'].includes(field) && entry && !safeUrl(entry)) throw new Error('Lien invalide : '+key+'.'+field);
   result[field] = entry;
  }
@@ -82,7 +86,7 @@ class App {
    const parts=path.split('.');
    let obj=this.data;
    for(const part of parts.slice(0,-1)) obj=obj[part];
-   obj[parts.at(-1)]=event.target.type==='checkbox'?event.target.checked:event.target.value;
+   obj[parts.at(-1)]=event.target.type==='checkbox'?event.target.checked:event.target.type==='number'?Number(event.target.value):event.target.value;
    this.dirty=true;this.preview();this.status('Modifications en cours · sauvegardez votre brouillon ou publiez.');
   });
   document.getElementById('fields').addEventListener('click',event=>{
@@ -108,6 +112,7 @@ class App {
  field(key,value,path) {
   const id='field-'+path.replaceAll('.','-'), label=labels[key]||key;
   if(typeof value==='boolean') return `<label class="field-toggle" for="${id}">${e(label)}<input role="switch" type="checkbox" id="${id}" data-path="${path}" ${value?'checked':''}></label>`;
+  if(Object.hasOwn(SIZE_SETTINGS,key)){const s=SIZE_SETTINGS[key];return `<label for="${id}">${e(s.label)}</label><input type="number" id="${id}" data-path="${path}" min="${s.min}" max="${s.max}" step="1" value="${value}"><p class="help">De ${s.min} à ${s.max} px · défaut : ${s.default} px. Aperçu immédiat sur les deux pages.</p>`;}
   if(key==='typography')return `<label for="${id}">Typographie</label><select id="${id}" data-path="${path}">${Object.entries(FONT_CHOICES).map(([k,f])=>`<option value="${k}" ${k===value?'selected':''}>${e(f.label)}</option>`).join('')}</select><p class="help">Trois associations professionnelles, avec un texte courant lisible. Le choix s’applique aux deux pages.</p>`;
   if(key==='background')return `<label for="${id}">Couleur de fond</label><select id="${id}" data-path="${path}">${Object.entries(PALETTES).map(([k,p])=>`<option value="${k}" ${k===value?'selected':''}>${e(p.label)}</option>`).join('')}</select><div class="palette-swatches" aria-hidden="true">${Object.entries(PALETTES).map(([k,p])=>`<span title="${e(p.label)}" style="background:${p.paper};${k===value?'outline:2px solid #183e37':''}"></span>`).join('')}</div><p class="help">Teintes claires sélectionnées pour leur contraste avec le texte. L’ivoire est le choix par défaut.</p>`;
   if(key==='photo')return `<label for="${id}">${e(label)}</label><input id="${id}" data-path="${path}" value="${e(value.startsWith('data:')?'':value)}" placeholder="Image importée ou adresse HTTPS"><label class="file-button">Importer une photo<input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><p class="help">JPEG, PNG ou WebP · 15 Mo maximum. La photo est optimisée puis incluse dans le contenu publié.</p>`;
@@ -123,6 +128,8 @@ class App {
  }
  preview() { this.frame.contentWindow?.postMessage({type:'neuro-preview',data:this.data},location.origin); }
  save() {
+  try { this.data=validateData(this.data); }
+  catch(error){this.status('Brouillon non enregistré : '+error.message);return;}
   try { localStorage.setItem(STORAGE_KEY,JSON.stringify({data:this.data,baseSha:this.baseSha}));this.dirty=false;this.hasDraft=true;this.status('Brouillon sauvegardé dans ce navigateur · '+new Date().toLocaleTimeString('fr-BE'));this.preview(); }
   catch { this.status('Sauvegarde locale impossible. Exportez un JSON pour conserver vos modifications.'); }
  }
@@ -143,7 +150,7 @@ class App {
  }
  async connect() {
   const input=document.getElementById('githubToken');const token=input.value.trim();input.value='';
-  if(!token.startsWith('github_pat_'))return this.githubStatus('Utilisez un jeton finement limité commençant par github_pat_.');
+  if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token))return this.githubStatus('Collez un jeton personnel GitHub valide (github_pat_ ou ghp_).');
   this.token=token;this.githubStatus('Connexion en cours…');
   try {
    const response=await fetch('https://api.github.com/user',{headers:this.headers()});
@@ -152,10 +159,10 @@ class App {
    const remote=await this.remote();this.remoteSha=remote.sha;
    if((this.hasDraft||this.dirty)&&this.baseSha&&this.baseSha!==remote.sha)throw new Error('Le contenu distant a changé depuis ce brouillon. Exportez votre brouillon et rechargez le site publié avant de fusionner vos modifications.');
    if(!this.hasDraft&&!this.dirty){this.data=validateData(JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(remote.content.replace(/\s/g,'')),c=>c.charCodeAt(0)))));this.render();this.preview();}
-   this.baseSha=remote.sha;document.getElementById('disconnect').disabled=false;this.githubStatus('Connecté à '+REPOSITORY+'. Prêt à publier.');
-  } catch(error){this.token=null;this.githubStatus(error.message);}
+   this.baseSha=remote.sha;document.getElementById('disconnect').disabled=false;document.getElementById('publish').disabled=false;this.githubStatus('Connecté à '+REPOSITORY+'. Modifiez les champs puis cliquez sur Publier sur GitHub pour mettre le site à jour.');
+  } catch(error){this.token=null;document.getElementById('publish').disabled=true;document.getElementById('disconnect').disabled=true;this.githubStatus(error.message);}
  }
- disconnect(){this.token=null;this.remoteSha=null;document.getElementById('githubToken').value='';document.getElementById('disconnect').disabled=true;this.githubStatus('Déconnecté. Le jeton a été retiré de la mémoire.');}
+ disconnect(){this.token=null;this.remoteSha=null;document.getElementById('githubToken').value='';document.getElementById('disconnect').disabled=true;document.getElementById('publish').disabled=true;this.githubStatus('Déconnecté. Le jeton a été retiré de la mémoire.');}
  async publish() {
   if(!this.token){this.githubStatus('Connectez GitHub pour publier. Vos modifications restent en brouillon.');document.getElementById('githubToken').focus();return;}
   const button=document.getElementById('publish');button.disabled=true;this.githubStatus('Publication en cours…');
@@ -165,7 +172,7 @@ class App {
    const bytes=new TextEncoder().encode(JSON.stringify(data,null,2)+'\n');
    let binary='';for(const b of bytes)binary+=String.fromCharCode(b);
    const response=await fetch(this.endpoint(),{method:'PUT',headers:{...this.headers(),'Content-Type':'application/json'},body:JSON.stringify({message:'Mettre à jour le site de neurologie depuis le CMS',content:btoa(binary),sha:remote.sha,branch:'main'})});
-   if(!response.ok){const error=await response.json();throw new Error(error.message||'Publication refusée ('+response.status+').');}
+   if(!response.ok){const error=await response.json();throw new Error(response.status===403?'Ce jeton ne permet pas de publier. Autorisez le dépôt neurologue et la permission Contents : lecture et écriture.':error.message||'Publication refusée ('+response.status+').');}
    const result=await response.json();this.baseSha=result.content.sha;this.remoteSha=this.baseSha;this.save();this.githubStatus('Contenu publié sur GitHub ✓ Le déploiement Pages démarre. Le site sera mis à jour après sa réussite.');
   }catch(error){this.githubStatus('Publication interrompue : '+error.message);}finally{button.disabled=false;}
  }

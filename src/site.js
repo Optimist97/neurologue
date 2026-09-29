@@ -1,6 +1,11 @@
 export const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 export function safeUrl(value = '') { try { const u = new URL(value); return ['https:', 'http:', 'mailto:', 'tel:'].includes(u.protocol) ? escapeHtml(u.href) : ''; } catch { return ''; } }
 const e = escapeHtml;
+export const SIZE_SETTINGS = {
+  menuSize: {label:'Taille des menus (px)',min:16,max:24,default:18,variable:'--menu-size'},
+  titleSize: {label:'Taille des titres (px)',min:30,max:56,default:40,variable:'--title-size'},
+  textSize: {label:'Taille du texte (px)',min:16,max:24,default:18,variable:'--text-size'}
+};
 export const FONT_CHOICES = {
   classic: { label:'Classique · Source Serif 4', serif:'"Source Serif 4", Georgia, serif', sans:'"Source Sans 3", system-ui, sans-serif' },
   contemporary: { label:'Contemporain · Lora', serif:'Lora, Georgia, serif', sans:'"DM Sans", system-ui, sans-serif' },
@@ -28,6 +33,10 @@ export function renderSite(root, d, mode='home') {
   const style=root.ownerDocument?.documentElement.style;
   const fonts=Object.hasOwn(FONT_CHOICES,d.general.typography) ? FONT_CHOICES[d.general.typography] : FONT_CHOICES.classic;
   if(style){style.setProperty('--paper',palette.paper);style.setProperty('--sage',palette.sage);style.setProperty('--serif',fonts.serif);style.setProperty('--sans',fonts.sans);}
+  if(style)for(const [key,setting] of Object.entries(SIZE_SETTINGS)) {
+    const value=d.general[key];
+    style.setProperty(setting.variable,(Number.isInteger(value)&&value>=setting.min&&value<=setting.max?value:setting.default)+'px');
+  }
   if (d.maintenance.enabled) { root.innerHTML = `<main id="main" class="maintenance"><span class="brand-mark">${e(d.general.initials)}</span><p class="eyebrow">${e(d.general.name)} · ${e(d.general.specialty)}</p><h1>${e(d.maintenance.title)}</h1><p>${e(d.maintenance.message)}</p></main>`; return; }
   const home=mode==='home';
   if (!home && !shown(d.infoPage)) { root.innerHTML='<main id="main" class="maintenance"><h1>Page indisponible</h1><a href="./index.html">Retour à l’accueil</a></main>';return; }

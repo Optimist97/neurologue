@@ -13,7 +13,10 @@
     "showPhoto": true,
     "photoAlt": "Portrait fictif du Dr Olivia Renard",
     "background": "ivory",
-    "typography": "classic"
+    "typography": "classic",
+    "menuSize": 18,
+    "titleSize": 40,
+    "textSize": 18
   },
   "maintenance": {
     "enabled": false,

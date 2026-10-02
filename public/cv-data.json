@@ -30,12 +30,12 @@
     "note": "Consultations en français · Sur rendez-vous"
   },
   "about": {
-    "illustrationVisible": true,
+    "illustrationVisible": false,
     "visible": true,
     "eyebrow": "LA NEUROLOGUE",
     "title": "Présentation",
     "text": "Médecin spécialiste en neurologie, je reçois les adultes pour l’évaluation et le suivi des maladies du système nerveux. Le suivi est organisé en lien avec votre médecin généraliste.",
-    "qualifications": "Médecin spécialiste en neurologie · UCLouvain (exemple fictif)",
+    "qualifications": "Médecin spécialiste en neurologie · UCLouvain",
     "languages": "Consultations en français · Anglais sur demande"
   },
   "topics": {
@@ -196,7 +196,7 @@
     "url": "tel:112"
   },
   "legal": {
-    "visible": true,
+    "visible": false,
     "title": "Mentions légales & confidentialité",
     "text": "Site de démonstration du Dr Olivia Rocrelle.\n\nÉditeur : à compléter avant une utilisation réelle (nom, adresse professionnelle, numéro INAMI et contact). Hébergement : GitHub Pages, GitHub Inc. Ce site ne collecte pas de dossiers patients et ne comporte aucun formulaire médical, outil publicitaire ou suivi d’audience. Les sites externes appliquent leur propre politique de confidentialité.\n\nCes informations générales ne remplacent pas une consultation. Les données de cet exemple doivent être adaptées et vérifiées par la praticienne avant usage professionnel."
   },
